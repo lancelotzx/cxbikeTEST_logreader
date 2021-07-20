@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SysLogUploadMapper">
+    
+    <resultMap type="SysLogUpload" id="SysLogUploadResult">
+        <result property="logName"    column="log_name"    />
+        <result property="id"    column="id"    />
+        <result property="logUrl"    column="log_url"    />
+    </resultMap>
+
+    <sql id="selectSysLogUploadVo">
+        select log_name, id, log_url from sys_log_upload
+    </sql>
+
+    <select id="selectSysLogUploadList" parameterType="SysLogUpload" resultMap="SysLogUploadResult">
+        <include refid="selectSysLogUploadVo"/>
+        <where>  
+            <if test="logName != null  and logName != ''"> and log_name like concat('%', #{logName}, '%')</if>
+            <if test="logUrl != null  and logUrl != ''"> and log_url = #{logUrl}</if>
+        </where>
+    </select>
+    
+    <select id="selectSysLogUploadById" parameterType="Long" resultMap="SysLogUploadResult">
+        <include refid="selectSysLogUploadVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertSysLogUpload" parameterType="SysLogUpload" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_log_upload
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="logName != null and logName != ''">log_name,</if>
+            <if test="logUrl != null and logUrl != ''">log_url,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="logName != null and logName != ''">#{logName},</if>
+            <if test="logUrl != null and logUrl != ''">#{logUrl},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysLogUpload" parameterType="SysLogUpload">
+        update sys_log_upload
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="logName != null and logName != ''">log_name = #{logName},</if>
+            <if test="logUrl != null and logUrl != ''">log_url = #{logUrl},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteSysLogUploadById" parameterType="Long">
+        delete from sys_log_upload where id = #{id}
+    </delete>
+
+    <delete id="deleteSysLogUploadByIds" parameterType="String">
+        delete from sys_log_upload where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>
