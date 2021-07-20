@@ -4,6 +4,9 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.ruoyi.system.domain.SysLogUpload;
+import com.ruoyi.system.service.ISysLogUploadService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +37,9 @@ public class CommonController
 
     @Autowired
     private ServerConfig serverConfig;
+
+    @Autowired
+    private ISysLogUploadService sysLogUploadService;
 
     /**
      * 通用下载请求
@@ -82,6 +88,12 @@ public class CommonController
             String fileName = FileUploadUtils.upload(filePath, file);
             String url = serverConfig.getUrl() + fileName;
             AjaxResult ajax = AjaxResult.success();
+            //进行自动upload数据表更新
+            SysLogUpload sysLogUpload = new SysLogUpload();
+            sysLogUpload.setLogUrl(url);
+            sysLogUpload.setLogName(fileName);
+            sysLogUploadService.insertSysLogUpload(sysLogUpload);
+
             ajax.put("fileName", fileName);
             ajax.put("url", url);
             return ajax;

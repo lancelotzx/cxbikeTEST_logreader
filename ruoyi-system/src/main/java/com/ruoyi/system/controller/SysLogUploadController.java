@@ -20,8 +20,8 @@ import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.common.core.page.TableDataInfo;
 
 /**
- * 日志上传查看Controller
- * 
+ * 日志上传查看Controller,add部分和upload部分进行整合，不会手动add，每次用户upload之后都会自动新增一条，
+ *
  * @author ruoyi
  * @date 2021-07-20
  */
