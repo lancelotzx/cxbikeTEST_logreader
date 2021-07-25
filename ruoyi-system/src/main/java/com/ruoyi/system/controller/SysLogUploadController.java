@@ -100,6 +100,18 @@ public class SysLogUploadController extends BaseController
         return prefix + "/edit";
     }
 
+
+    /**
+     * 日志解析by wj
+     */
+    @GetMapping("/edit2/{id}")
+    public String edit2(@PathVariable("id") Long id, ModelMap mmap)
+    {
+       // SysLogUpload sysLogUpload = sysLogUploadService.selectSysLogUploadById(id);
+       // mmap.put("sysLogUpload", sysLogUpload);
+        return "system/server/server";
+    }
+
     /**
      * 修改保存日志上传查看
      */
