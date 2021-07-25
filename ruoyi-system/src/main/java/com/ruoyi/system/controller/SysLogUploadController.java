@@ -1,6 +1,8 @@
 package com.ruoyi.system.controller;
 
 import java.util.List;
+
+import com.ruoyi.system.domain.LogParser;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -109,6 +111,11 @@ public class SysLogUploadController extends BaseController
     {
        // SysLogUpload sysLogUpload = sysLogUploadService.selectSysLogUploadById(id);
        // mmap.put("sysLogUpload", sysLogUpload);
+        System.out.println(id);
+        SysLogUpload su = sysLogUploadService.selectSysLogUploadById(id);
+        System.out.println(su.getLogUrl());
+        // TODO： 下面开始进行文本解析的util调用
+        LogParser lp = new LogParser();
         return "system/server/server";
     }
 
