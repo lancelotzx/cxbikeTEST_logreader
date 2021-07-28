@@ -28,15 +28,15 @@
                                 <tbody>
                                     <tr>
                                         <td>设备imei数</td>
-                                        <td >0个</td>
+                                        <td th:text="${lp.deviceList.length}">0个</td>
                                     </tr>
                                     <tr>
-                                        <td>用户使用率</td>
+                                        <td>总接收报文数</td>
                                         <td >0%</td>
                                     </tr>
                                     <tr>
-                                        <td>系统使用率</td>
-                                        <td >0%</td>
+                                        <td>日志跨度时间(秒)</td>
+                                        <td th:text="${lp.logDuration}">0</td>
                                     </tr>
                                     <tr>
                                         <td>当前空闲率</td>
@@ -206,6 +206,47 @@
 	});
 
 	var myChart = echarts.init(document.getElementById('main'));
+
+	$.ajax({
+            type : "get",
+            async : true,            //异步请求（同步请求将会锁住浏览器，用户其他操作必须等待请求完成才可以执行）
+            url : "/system/upload/edit2/",    //请求发送到dataActiont处
+            data : {},
+            dataType : "json",        //返回数据形式为json
+            success : function(result) {
+                //请求成功时执行该函数内容，result即为服务器返回的json对象
+                if (result) {
+                    for(var i=0;i<result.length;i++){
+                        names.push(result[i].name);
+                        values.push(result[i].num);
+                    }
+                    myChart.hideLoading();    //隐藏加载动画
+                    myChart.setOption({        //加载数据图表
+                        tooltip: {},
+                        legend: {
+                            data:['數量']
+                        },
+                        xAxis: {
+                            data: names
+                        },
+                        yAxis: {
+                            type: 'value'
+                        },
+                        series: [{
+                            // 根据名字对应到相应的系列
+                            name: '數量',//薪资 series not exists. Legend data should be same with series name or data name.
+                            type: 'bar',
+                            data: values
+                        }]
+                    });
+                }
+            },
+            error : function(errorMsg) {
+                //请求失败时执行该函数
+                alert("图表请求数据失败!");
+                myChart.hideLoading();
+            }
+        });//end ajax
 
         // 指定图表的配置项和数据
         var option = {
