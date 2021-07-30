@@ -32,15 +32,15 @@
                                     </tr>
                                     <tr>
                                         <td>总接收报文数</td>
-                                        <td >0%</td>
+                                        <td th:text="${lp.receiveMsgCount}">0</td>
                                     </tr>
                                     <tr>
                                         <td>日志跨度时间(秒)</td>
                                         <td th:text="${lp.logDuration}">0</td>
                                     </tr>
                                     <tr>
-                                        <td>当前空闲率</td>
-                                        <td >0%</td>
+                                        <td>发生_IDLE事件总数</td>
+                                        <td th:text="${lp.idleInstanceCount}">0</td>
                                     </tr>
                                 </tbody>
                             </table>

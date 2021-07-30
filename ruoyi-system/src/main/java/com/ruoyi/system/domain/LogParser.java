@@ -7,6 +7,29 @@ public class LogParser {
     // 日志持续时间-总的
     private Long logDuration;
 
+    // 日志中IDLE的次数
+    private int idleInstanceCount;
+
+    public int getReceiveMsgCount() {
+        return receiveMsgCount;
+    }
+
+    public void setReceiveMsgCount(int receiveMsgCount) {
+        this.receiveMsgCount = receiveMsgCount;
+    }
+
+    // 日志中receiveMsg的次数
+    private  int receiveMsgCount;
+
+    public int getIdleInstanceCount() {
+        return idleInstanceCount;
+    }
+
+    public void setIdleInstanceCount(int idleInstanceCount) {
+        this.idleInstanceCount = idleInstanceCount;
+    }
+
+
     // 设备总数 直接计算设备列表的length即可
     // private int deviceNum;
 

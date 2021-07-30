@@ -116,7 +116,7 @@ public class SysLogUploadController extends BaseController
 
 
     /**
-     * 日志解析by wj 触发：从table的row的'数据分析'过来
+     * 日志解析by wj 触发：从table的row的'数据分析'按钮点击触发
      */
     @GetMapping("/edit2/{id}")
     public String edit2(@PathVariable("id") Long id, ModelMap mmap) throws IOException {
@@ -137,23 +137,6 @@ public class SysLogUploadController extends BaseController
         return "system/server/server";
     }
 
-//    // 把数据获取单独封装成rest，触发：从/system/server/server页面的ajax请求过来，进入页面后自动请求
-//    @GetMapping("/edit2detail/{id}")
-//    public LogParser edit2detail(@PathVariable("id") Long id, ModelMap mmap) throws IOException {
-//        LogParser lp  = new LogParser();
-//        SysLogUpload su = sysLogUploadService.selectSysLogUploadById(id);
-//        System.out.println(su.getLogUrl());
-//        // TODO： 下面开始进行文本解析的util调用
-//        String localPath = RuoYiConfig.getProfile();// Users/lancelot/programming/ruoyiupload
-//        String dbPath = su.getLogUrl();
-//        localPath = localPath + dbPath.substring("http://localhost/profile".length());
-//        System.out.println(localPath);
-//        lp = processLog(localPath);
-//        System.out.println(lp.getDeviceList().toString());
-//        mmap.put("lp", lp);
-//        return lp;
-//    }
-
 
     // 进行omni日志文件的解析工作
     public  LogParser processLog(String url) throws IOException {
@@ -170,10 +153,12 @@ public class SysLogUploadController extends BaseController
         Date firstLineTime = null ;
         Date lastLineTime = null;
         int lineNum = 0;
+        int idleNum = 0;
+        int receivedMsgNum = 0;
         SimpleDateFormat sdf =   new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
         while((s = br.readLine()) != null){ // 读取每一行数据
 
-            if((lineNum == 0)&&(s.length() > 19)&&(s.substring(0,3).equals("202"))) { // 第一行的时间记录
+            if((lineNum == 0)&&(s.length() > 19)&&(s.substring(0,3).equals("202"))) { // 第一行的时间记录，202x年开头
                 try {
                     firstLineTime =sdf.parse( s.substring(0, 19) );
                 } catch (ParseException e) {
@@ -196,12 +181,26 @@ public class SysLogUploadController extends BaseController
                     strlist.add(m.group(1));
                 }
             }
+            String re2 = ".*_IDLE.*";
+            Pattern p2 = Pattern.compile(re2);
+            Matcher m2 = p2.matcher(s);
+            if(m2.find()) { // 找到匹配项,则先判断是否在str数组中，若不在则加到str后面
+                idleNum++;
+            }
+            String re3 = ".*receive ip.*";
+            Pattern p3 = Pattern.compile(re3);
+            Matcher m3 = p3.matcher(s);
+            if(m3.find()) { // 找到匹配项,则先判断是否在str数组中，若不在则加到str后面
+                receivedMsgNum++;
+            }
         }
         int a = (int) ((lastLineTime.getTime() - firstLineTime.getTime()) / (1000*60));
         str = strlist.toArray(new String[0]);
         br.close();
         logParser.setDeviceList(str);
-        logParser.setLogDuration((long)a);
+        logParser.setLogDuration((long)a); // 时间跨度秒
+        logParser.setIdleInstanceCount(idleNum);
+        logParser.setReceiveMsgCount(receivedMsgNum);
         return logParser;
     }
 
