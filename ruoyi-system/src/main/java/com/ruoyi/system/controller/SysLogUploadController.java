@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 
 import com.ruoyi.common.config.RuoYiConfig;
 import com.ruoyi.system.domain.LogParser;
+import com.ruoyi.system.domain.SingleDevice;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -36,7 +37,8 @@ import com.ruoyi.common.core.page.TableDataInfo;
 /**
  * 日志上传查看Controller,add部分和upload部分进行整合，不会手动add，每次用户upload之后都会自动新增一条，
  *
- * @author ruoyi
+ * 对于日志格式：注意，现在是以OMNI设备的日志格式为基准的
+ * @author wangjia
  * @date 2021-07-20
  */
 @Controller
@@ -119,7 +121,7 @@ public class SysLogUploadController extends BaseController
      * 日志解析by wj 触发：从table的row的'数据分析'按钮点击触发
      */
     @GetMapping("/edit2/{id}")
-    public String edit2(@PathVariable("id") Long id, ModelMap mmap) throws IOException {
+    public String edit2(@PathVariable("id") Long id, ModelMap mmap) throws IOException, ParseException {
         // SysLogUpload sysLogUpload = sysLogUploadService.selectSysLogUploadById(id);
         // mmap.put("sysLogUpload", sysLogUpload);
         // System.out.println(id);
@@ -139,7 +141,7 @@ public class SysLogUploadController extends BaseController
 
 
     // 进行omni日志文件的解析工作
-    public  LogParser processLog(String url) throws IOException {
+    public  LogParser processLog(String url) throws IOException, ParseException {
 
         InputStreamReader read = new InputStreamReader(new FileInputStream(url),"UTF-8");
         BufferedReader br= new BufferedReader(read);//BufferedReader读取文件
@@ -149,7 +151,9 @@ public class SysLogUploadController extends BaseController
         String[] str = new String[]{};
        // List<String> list = Arrays.asList(str);
        // List arrList = new ArrayList(list);
+        List<String> logTotalList=new ArrayList<>();  // 日志全集数据,第一次while后保存在内存中
         List<String> strlist=new ArrayList(Arrays.asList(str));//**须定义时就进行转化**
+
         Date firstLineTime = null ;
         Date lastLineTime = null;
         int lineNum = 0;
@@ -157,7 +161,7 @@ public class SysLogUploadController extends BaseController
         int receivedMsgNum = 0;
         SimpleDateFormat sdf =   new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
         while((s = br.readLine()) != null){ // 读取每一行数据
-
+            logTotalList.add(s);
             if((lineNum == 0)&&(s.length() > 19)&&(s.substring(0,3).equals("202"))) { // 第一行的时间记录，202x年开头
                 try {
                     firstLineTime =sdf.parse( s.substring(0, 19) );
@@ -194,15 +198,84 @@ public class SysLogUploadController extends BaseController
                 receivedMsgNum++;
             }
         }
-        int a = (int) ((lastLineTime.getTime() - firstLineTime.getTime()) / (1000*60));
+        int logDuration = (int) ((lastLineTime.getTime() - firstLineTime.getTime()) / (1000*60));
         str = strlist.toArray(new String[0]);
         br.close();
         logParser.setDeviceList(str);
-        logParser.setLogDuration((long)a); // 时间跨度秒
-        logParser.setIdleInstanceCount(idleNum);
+        // 将设备单体的对象属性进行填充。扫描str数组，循环开销为设备个数n
+        SingleDevice[] sd = new SingleDevice[str.length]; // 初始化设备数的对象
+        SingleDevice[] sdnew = new SingleDevice[str.length]; // 初始化设备数的对象
+        for( int k = 0; k < str.length; k++) { // str.length 为当前设备总数
+          //  System.out.println(str[k]);
+            sd[k] = new SingleDevice();  // 初始化设备单体对象
+            sd[k].setDeviceId(str[k]); // 设置单体设备的imei
+        }
+        logParser.setLogDuration((long)logDuration); // 时间跨度秒
+        logParser.setIdleInstanceCount(idleNum); // read_idle 或 write_idle 的次数
         logParser.setReceiveMsgCount(receivedMsgNum);
+
+        for(int ii = 0 ; ii < sd.length; ii++ ) {
+            SingleDevice ss = getOneDeviceProperty(logTotalList, sd[ii]);
+            sdnew[ii] =  ss;
+        }
+        logParser.setDeviceDetail(sdnew);
+        br.close();
+        read.close();
         return logParser;
     }
+
+    /**
+     * 重写 py:getTimeFromLog(logLine)
+     * 获取某一行文本的时间datetime
+     * line：某一行原始日志文本
+     * return: Date d 对象
+     */
+    Date getTimeInLine(String line) {
+        Date d = null;
+        SimpleDateFormat sdf =   new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
+        if((line.length() > 19) && (line.substring(0,3).equals("202"))) {
+            try {
+                d =sdf.parse( line.substring(0, 19) ); // 截取到秒级别
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+        return d;
+    }
+
+    /*
+    * 重写 calcHeartBeatGap(imeiId, ContentLines)
+    *
+    * 输入参数：br：日志文本
+    *         sd：设备单体对象，输入时只有imei是存在的
+    * 返回：   sd：填充了其他数据的sd
+    *
+    * 解析某一个imei 设备 的心跳数据，并返回一个对象，对象属性如下：
+    * SingleDevice的注释 2 3 4 5 6 7
+    * */
+    SingleDevice getOneDeviceProperty(List<String> list, SingleDevice sd) throws IOException, ParseException {
+
+       // String s = null;
+        Date d = null;
+        List<Date> dateList= new ArrayList<>();
+        SimpleDateFormat sdf =   new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
+        // SingleDevice的注释-2  心跳接收时间属性填充
+        for(String ss: list) { // 读取每一行数据
+            String re = sd.getDeviceId() + ".*type=H0" ; // 匹配imei值以及H0的特征pattern
+            Pattern p = Pattern.compile(re);
+            Matcher m = p.matcher(ss);
+            if(m.find()) { // 找到匹配项，获取时间字符串
+                d = sdf.parse( ss.substring(0, 19) );
+                dateList.add(d);
+            }
+        }
+        sd.setHeartBeatReceiveTime(dateList);
+        return sd;
+    }
+
+
+
+
 
     /**
      * 修改保存日志上传查看

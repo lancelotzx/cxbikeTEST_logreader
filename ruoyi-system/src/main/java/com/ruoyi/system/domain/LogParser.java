@@ -65,8 +65,18 @@ public class LogParser {
         this.deviceTotalData = deviceTotalData;
     }
 
-    // 设备列表
+    // 设备列表, imei值列表
     private String[] deviceList;
+
+    public SingleDevice[] getDeviceDetail() {
+        return deviceDetail;
+    }
+
+    public void setDeviceDetail(SingleDevice[] deviceDetail) {
+        this.deviceDetail = deviceDetail;
+    }
+
+    private SingleDevice[] deviceDetail;
 
     // 接收报文类型-总的
     private String[] msgTypes;
