@@ -70,15 +70,16 @@ public class SingleDevice {
 
     private List<Date> heartBeatReceiveTime;
 
-    public int[] getOverTimePoint() {
+
+    public List<Integer> getOverTimePoint() {
         return overTimePoint;
     }
 
-    public void setOverTimePoint(int[] overTimePoint) {
+    public void setOverTimePoint(List<Integer> overTimePoint) {
         this.overTimePoint = overTimePoint;
     }
 
-    private int[] overTimePoint;
+    private  List<Integer> overTimePoint;
 
     public int getMinOverTimeHeartBeatGap() {
         return minOverTimeHeartBeatGap;
@@ -93,15 +94,15 @@ public class SingleDevice {
      private int maxOverTimeHeartBeatGap;
 
 
-    public int[] getHeartBeatIntervals() {
+    public List<Integer> getHeartBeatIntervals() {
         return heartBeatIntervals;
     }
 
-    public void setHeartBeatIntervals(int[] heartBeatIntervals) {
+    public void setHeartBeatIntervals(List<Integer> heartBeatIntervals) {
         this.heartBeatIntervals = heartBeatIntervals;
     }
 
-    private  int[] heartBeatIntervals;
+    private  List<Integer> heartBeatIntervals;
 
     public String getDeviceId() {
         return deviceId;

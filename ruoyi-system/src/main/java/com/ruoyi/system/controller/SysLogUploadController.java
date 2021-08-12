@@ -6,10 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -198,7 +195,7 @@ public class SysLogUploadController extends BaseController
                 receivedMsgNum++;
             }
         }
-        int logDuration = (int) ((lastLineTime.getTime() - firstLineTime.getTime()) / (1000*60));
+        int logDuration = (int) ((lastLineTime.getTime() - firstLineTime.getTime()) / (1000*60)); // 单位是分钟
         str = strlist.toArray(new String[0]);
         br.close();
         logParser.setDeviceList(str);
@@ -258,6 +255,9 @@ public class SysLogUploadController extends BaseController
        // String s = null;
         Date d = null;
         List<Date> dateList= new ArrayList<>();
+        List<Integer> timeInterval = new ArrayList<>();
+        List<Integer> overTimeSec = new ArrayList<>();
+
         SimpleDateFormat sdf =   new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
         // SingleDevice的注释-2  心跳接收时间属性填充
         for(String ss: list) { // 读取每一行数据
@@ -269,7 +269,33 @@ public class SysLogUploadController extends BaseController
                 dateList.add(d);
             }
         }
+        // SingleDevice的注释-3  心跳接收时间间隔属性填充,遍历设备的心跳时间数组并进行计算
+        timeInterval.add(240); //第一个元是0
+        for(int i = 1 ; i < dateList.size(); i++) { // 从第二个元素开始计算 Tn - Tn-1
+            timeInterval.add( (int) ((dateList.get(i).getTime() - dateList.get(i - 1).getTime()) / 1000) );
+        }
+
+        // SingleDevice的注释-4 计算间隔是否超时，间隔基准为240s，计算超过240s的case
+        for (Integer integer : timeInterval) { // 从第二个元素开始计算 Tn - Tn-1
+            overTimeSec.add(integer - 240);
+        }
+
         sd.setHeartBeatReceiveTime(dateList);
+        sd.setHeartBeatIntervals(timeInterval);
+        sd.setOverTimePoint(overTimeSec);
+        sd.setMaxOverTimeHeartBeatGap(Collections.max(overTimeSec));
+        sd.setMinOverTimeHeartBeatGap(Collections.min(overTimeSec));
+        int count  = 0;
+        for (Integer integer : overTimeSec) { // 从第二个元素开始计算 Tn - Tn-1
+            if(integer > 3) { // 大于3s算为超时
+                 count++;
+            }
+        }
+        java.text.NumberFormat numberFormat = java.text.NumberFormat.getNumberInstance();
+        numberFormat.setMaximumFractionDigits(2);
+        String percent = numberFormat.format((float)count / (float)dateList.size() *100 ) + "%";
+        sd.setOverTimeCount(count);
+        sd.setOverTimeCountPercent(percent);
         return sd;
     }
 
