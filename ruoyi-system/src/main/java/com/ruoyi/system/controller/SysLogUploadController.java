@@ -216,6 +216,25 @@ public class SysLogUploadController extends BaseController
             sdnew[ii] =  ss;
         }
         logParser.setDeviceDetail(sdnew);
+        int overTimeDeviceCount = 0; // 超时设备的个数计数
+        int maxOverTimeInAll = 0; // 所有设备的最长超时时间
+        int maxOverTimeInDevice = 0;
+        for(int ii = 0; ii < sdnew.length; ii++) {
+            if(sdnew[ii].getOverTimeCount() > 0){
+                overTimeDeviceCount ++;  // 超时设备个数统计
+            }
+            if(sdnew[ii].getMaxOverTimeHeartBeatGap() > maxOverTimeInAll) {
+                maxOverTimeInAll = sdnew[ii].getMaxOverTimeHeartBeatGap(); // 最长的gap时间
+            }
+            if(sdnew[ii].getOverTimeCount() > maxOverTimeInDevice) {
+                maxOverTimeInDevice = sdnew[ii].getOverTimeCount(); // 所有设备超时次数的最大值
+            }
+
+        }
+        logParser.setOverTimeDeviceNum(overTimeDeviceCount);
+        logParser.setMaxOverTimeInAll(maxOverTimeInAll);
+        logParser.setMaxOverTimeNumOfDevice(maxOverTimeInDevice);
+
         br.close();
         read.close();
         return logParser;

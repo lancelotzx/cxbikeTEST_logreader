@@ -81,6 +81,38 @@ public class LogParser {
     // 接收报文类型-总的
     private String[] msgTypes;
 
+    public int getOverTimeDeviceNum() {
+        return overTimeDeviceNum;
+    }
+
+    public void setOverTimeDeviceNum(int overTimeDeviceNum) {
+        this.overTimeDeviceNum = overTimeDeviceNum;
+    }
+
+    // 本日志中超时设备个数
+    private int overTimeDeviceNum;
+
+    public int getMaxOverTimeInAll() {
+        return maxOverTimeInAll;
+    }
+
+    public void setMaxOverTimeInAll(int maxOverTimeInAll) {
+        this.maxOverTimeInAll = maxOverTimeInAll;
+    }
+
+    private int maxOverTimeInAll;
+
+    public int getMaxOverTimeNumOfDevice() {
+        return maxOverTimeNumOfDevice;
+    }
+
+    public void setMaxOverTimeNumOfDevice(int maxOverTimeNumOfDevice) {
+        this.maxOverTimeNumOfDevice = maxOverTimeNumOfDevice;
+    }
+
+    private int maxOverTimeNumOfDevice;
+
+
     // 发送报文类型-分设备分类型，key:String为设备id，value为SingleDevice对象数组
     private HashMap<String, Object> deviceTotalData = new HashMap<String, Object>();
 
