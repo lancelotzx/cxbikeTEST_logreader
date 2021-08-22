@@ -216,6 +216,7 @@
         totalData.sort((a,b)=> {return  (b.overTimeCount - a.overTimeCount) });
        // console.log(totalData); // ok 按超时进行了逆序
        var top10data = totalData.slice(0,10); // 前10个劣化设备的完整对象
+       var tempDeviceObj = null;
        console.log(top10data); 
 
        $(function() {
@@ -267,9 +268,16 @@
 
         $('#myModal').on('show.bs.modal',function(e){
             var orderid = $(e.relatedTarget).data('orderid');
+            // orderid 是当前行的imeiid
             console.log(orderid);
-            //console.log("result", t1,t2,t3);
-        });
+            
+            for(var i of top10data) {
+                if(i.deviceId == orderid){
+                    tempDeviceObj = i;
+                    break;
+                }
+            }
+        // tempDeviceObj 就是单设备图表的数据源
         // 指定图表的配置项和数据
         var option = {
             title: {
@@ -277,21 +285,26 @@
             },
             tooltip: {},
             legend: {
-                data:['销量']
+                data:['时间']
             },
-            xAxis: {
-                data: ["衬衫","羊毛衫","雪纺衫","裤子","高跟鞋","袜子"]
+            xAxis: { // x是心跳时间点
+                data: tempDeviceObj.heartBeatReceiveTime
             },
             yAxis: {},
             series: [{
-                name: '销量',
-                type: 'bar',
-                data: [5, 20, 36, 10, 10, 20]
+                name: '时间',
+                type: 'line',
+                data: tempDeviceObj.overTimePoint
             }]
         };
 
         // 使用刚指定的配置项和数据显示图表。
         myChart.setOption(option);
+            
+
+            //console.log("result", t1,t2,t3);
+        });
+        
 
 
 </script>
