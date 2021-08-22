@@ -113,6 +113,23 @@
                     </div>
                 </div>
             </div>
+
+                        <!--点击图表3后每行的 模态框（Modal） -->
+            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                            <h4 class="modal-title" id="myModalLabel">单设备超时图表</h4>
+                        </div>
+                        <div id="main" style="width: 600px;height:400px;"></div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal -->
+            </div>
+
             
             <div class="row">
                 <div class="col-sm-12">
@@ -133,7 +150,7 @@
                             <div class="row">
                                 <div class="col-sm-12">
 
-                                        <div id="main" style="width: 600px;height:400px;"></div>
+                                        <!-- <div id="main" style="width: 600px;height:400px;"></div> -->
 
                                 </div>
                             </div>
@@ -189,7 +206,7 @@
 		var div_ibox = $(this).closest("div.ibox");
 		div_ibox.remove()
 	});
-
+    var t1,t2,t3;
 	var myChart = echarts.init(document.getElementById('main'));
         var totalData = [[ ${lp.deviceDetail} ]];
         //console.log(totalData); // 打印全部对象，已完成。
@@ -198,7 +215,8 @@
         // 功能表3 top10 的超时设备概要，需要从totalData中解析出当前超时次数最多的10个设备，使用sort函数进行倒序处理
         totalData.sort((a,b)=> {return  (b.overTimeCount - a.overTimeCount) });
        // console.log(totalData); // ok 按超时进行了逆序
-       var top10data = totalData.slice(0,10);
+       var top10data = totalData.slice(0,10); // 前10个劣化设备的完整对象
+       console.log(top10data); 
 
        $(function() {
             var options = {
@@ -234,18 +252,28 @@
 		            align: 'center',
 		            formatter: function(value, row, index) {
 		            	var actions = [];
-		            	actions.push('<a class="btn btn-success btn-xs" href="#"><i class="fa fa-edit"></i>编辑</a> ');
-                        actions.push('<a class="btn btn-danger btn-xs" href="#"><i class="fa fa-remove"></i>删除</a>');
+		            	actions.push('<a class="btn btn-success btn-xs" data-toggle="modal" data-target="#myModal" data-orderId='+ row.deviceId +'><i class="fa fa-edit"></i>图表</a> ');
+                        // actions.push('<a class="btn btn-danger btn-xs" href="#"><i class="fa fa-remove"></i>删除</a>');
 						return actions.join('');
 		            }
 		        }]
             };
             $.table.init(options);
         });
+
+        function showdata(row,index) {
+            console.log(row, index);
+        }
+
+        $('#myModal').on('show.bs.modal',function(e){
+            var orderid = $(e.relatedTarget).data('orderid');
+            console.log(orderid);
+            //console.log("result", t1,t2,t3);
+        });
         // 指定图表的配置项和数据
         var option = {
             title: {
-                text: 'ECharts 入门示例'
+                text: '单设备超时详情表，横轴为超时时间点，纵轴为超时的值'
             },
             tooltip: {},
             legend: {
