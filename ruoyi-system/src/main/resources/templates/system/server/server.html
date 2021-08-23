@@ -215,7 +215,7 @@
         // 功能表3 top10 的超时设备概要，需要从totalData中解析出当前超时次数最多的10个设备，使用sort函数进行倒序处理
         totalData.sort((a,b)=> {return  (b.overTimeCount - a.overTimeCount) });
        // console.log(totalData); // ok 按超时进行了逆序
-       var top10data = totalData.slice(0,10); // 前10个劣化设备的完整对象
+       var top10data = totalData;//totalData.slice(0,10); // 前10个劣化设备的完整对象
        var tempDeviceObj = null;
        console.log(top10data); 
 
@@ -283,9 +283,9 @@
             title: {
                 text: '单设备超时详情表，横轴为超时时间点，纵轴为超时的值'
             },
-            tooltip: {},
+            tooltip: {trigger: 'axis'},
             legend: {
-                data:['时间']
+                // data:['时间']
             },
             xAxis: { // x是心跳时间点
                 data: tempDeviceObj.heartBeatReceiveTime
@@ -294,6 +294,7 @@
             series: [{
                 name: '时间',
                 type: 'line',
+                itemStyle: {normal: {label: {show: true}}},
                 data: tempDeviceObj.overTimePoint
             }]
         };
