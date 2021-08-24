@@ -300,6 +300,7 @@ public class SysLogUploadController extends BaseController
             overTimeSec.add(integer - 240);
         }
 
+        sd.setTotalHBCount(dateList.size());
         sd.setHeartBeatReceiveTime(dateList);
         sd.setHeartBeatIntervals(timeInterval);
         sd.setOverTimePoint(overTimeSec);

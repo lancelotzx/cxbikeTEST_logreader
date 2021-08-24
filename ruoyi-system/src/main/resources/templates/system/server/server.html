@@ -135,7 +135,7 @@
                 <div class="col-sm-12">
                     <div class="ibox float-e-margins">
                         <div class="ibox-title">
-                            <h5>Java虚拟机信息</h5>
+                            <h5>总体心跳次数图表</h5>
                             <div class="ibox-tools">
                                 <a class="collapse-link">
                                     <i class="fa fa-chevron-up"></i>
@@ -149,9 +149,7 @@
 
                             <div class="row">
                                 <div class="col-sm-12">
-
-                                        <!-- <div id="main" style="width: 600px;height:400px;"></div> -->
-
+                                    <div id="main1" style="width: 600px;height:400px;"></div>
                                 </div>
                             </div>
                         </div>
@@ -192,6 +190,46 @@
 <th:block th:include="include :: footer" />
 <script th:src="@{/ajax/libs/echarts/echarts.min.js}"></script>
 <script th:inline="javascript">
+
+    var t1,t2,t3;
+	var myChart = echarts.init(document.getElementById('main'));
+    var myChart1 = echarts.init(document.getElementById('main1'));
+        var totalData = [[ ${lp.deviceDetail} ]];
+        //console.log(totalData); // 打印全部对象，已完成。
+        // 功能表1 车锁概况 完成
+        // 功能表2 超时情况概要 完成
+        // 功能表3 超时设备概要，先从高往低排序，使用sort函数进行倒序处理
+        totalData.sort((a,b)=> {return  (b.overTimeCount - a.overTimeCount) });
+       // console.log(totalData); // ok 按超时进行了逆序
+       var top10data = totalData;//totalData.slice(0,10); // 前10个劣化设备的完整对象
+       var tempDeviceObj = null;
+       //console.log(top10data); 
+
+    // main1 用，横轴是设备id数组，纵轴是心跳数，不排序了
+        // 指定图表的配置项和数据
+        var option1 = {
+            title: {
+                text: '设备集合心跳数表，横轴为设备id，纵轴为心跳值(次)'
+            },
+            tooltip: {trigger: 'axis'},
+            legend: {
+                // data:['时间']
+            },
+            xAxis: { // x是心跳时间点
+                data: totalData.map(x => {return x.deviceId}) // 通过lambda从全对象数组解析出id数组作为x轴
+            },
+            yAxis: {},
+            series: [{
+                name: '次数',
+                type: 'line',
+                itemStyle: {normal: {label: {show: true}}},
+                data: totalData.map(x => {return x.totalHBCount})
+            }]
+        };
+        // 使用刚指定的配置项和数据显示图表。
+        myChart1.setOption(option1);
+        
+
     $(".modal").appendTo("body"), $("[data-toggle=popover]").popover(), $(".collapse-link").click(function() {
         var div_ibox = $(this).closest("div.ibox"),
         e = $(this).find("i"),
@@ -206,19 +244,7 @@
 		var div_ibox = $(this).closest("div.ibox");
 		div_ibox.remove()
 	});
-    var t1,t2,t3;
-	var myChart = echarts.init(document.getElementById('main'));
-        var totalData = [[ ${lp.deviceDetail} ]];
-        //console.log(totalData); // 打印全部对象，已完成。
-        // 功能表1 车锁概况 完成
-        // 功能表2 超时情况概要 完成
-        // 功能表3 top10 的超时设备概要，需要从totalData中解析出当前超时次数最多的10个设备，使用sort函数进行倒序处理
-        totalData.sort((a,b)=> {return  (b.overTimeCount - a.overTimeCount) });
-       // console.log(totalData); // ok 按超时进行了逆序
-       var top10data = totalData;//totalData.slice(0,10); // 前10个劣化设备的完整对象
-       var tempDeviceObj = null;
-       console.log(top10data); 
-
+    
        $(function() {
             var options = {
                 id: "bootstrap-table1",
@@ -281,7 +307,7 @@
         // 指定图表的配置项和数据
         var option = {
             title: {
-                text: '单设备超时详情表，横轴为超时时间点，纵轴为超时的值'
+                text: '单设备超时详情表，横轴为时间点，纵轴为超时值(秒)'
             },
             tooltip: {trigger: 'axis'},
             legend: {
@@ -298,13 +324,11 @@
                 data: tempDeviceObj.overTimePoint
             }]
         };
-
         // 使用刚指定的配置项和数据显示图表。
         myChart.setOption(option);
-            
-
             //console.log("result", t1,t2,t3);
         });
+
         
 
 
