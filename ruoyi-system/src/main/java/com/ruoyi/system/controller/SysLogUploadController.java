@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -13,6 +14,7 @@ import java.util.regex.Pattern;
 import com.ruoyi.common.config.RuoYiConfig;
 import com.ruoyi.system.domain.LogParser;
 import com.ruoyi.system.domain.SingleDevice;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -128,8 +130,11 @@ public class SysLogUploadController extends BaseController
         // TODO： 下面开始进行文本解析的util调用
         String localPath = RuoYiConfig.getProfile();// Users/lancelot/programming/ruoyiupload
         String dbPath = su.getLogUrl();
-        localPath = localPath + dbPath.substring("http://localhost/profile".length());
+        System.out.println("dbpath: " + dbPath);
+        localPath = localPath + dbPath.substring(dbPath.indexOf("/profile/") + 8); // 8是profile这个字符串的长度
         System.out.println(localPath);
+        // URL url = new URL(dbPath);
+        //System.out.println("url: " + url.toString());
         lp = processLog(localPath);
         System.out.println(lp.getDeviceList().toString());
         mmap.put("lp", lp);
